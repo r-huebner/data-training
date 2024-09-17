@@ -1,0 +1,118 @@
+# Define the IP address and port
+API_HOST="127.0.0.1"
+API_PORT="8000"
+
+# Define auth headers
+AUTH_HEADER="Authorization: Basic alice:wonderland"
+AUTH_HEADER_ADMIN="Authorization: Basic admin:4dm1N"
+AUTH_HEADER_INVALID_USER="Authorization: Basic mark:wonderland"
+AUTH_HEADER_INVALID_PASS="Authorization: Basic alice:wonderwater"
+
+# cURL Commands
+
+# Get status
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/status"
+echo
+
+# Get index
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/"
+echo
+
+# Create a new question with valid data and header
+curl -H "$AUTH_HEADER_ADMIN" -X POST "http://${API_HOST}:${API_PORT}/new_question" \
+-H "Content-Type: application/json" \
+-d '{
+  "question": "What is the capital of Germany?",
+  "subject": "Geography",
+  "correct": "A,B",
+  "use": "MCQ",
+  "responseA": "Koelln",
+  "responseB": "Berlin",
+  "responseC": "Paris"
+}'
+echo
+
+# Create a new question with invalid data and invalid header
+curl -H "$AUTH_HEADER" -X POST "http://${API_HOST}:${API_PORT}/new_question" \
+-H "Content-Type: application/json" \
+-d '{
+  "question": "What is the capital of Germany?",
+  "subject": "Geography",
+  "correct": "B",
+  "use": "MCQ",
+  "responseA": "London",
+  "responseB": "Berlin",
+  "responseC": "Paris",
+  "responseD": "Madrid"
+}'
+echo
+
+# Create a new question with invalid data (missing field responseA) and valid header
+curl -H "$AUTH_HEADER_ADMIN" -X POST "http://${API_HOST}:${API_PORT}/new_question" \
+-H "Content-Type: application/json" \
+-d '{
+  "question": "What is the capital of Germany?",
+  "subject": "Geography",
+  "correct": "B",
+  "use": "MCQ",
+  "responseB": "Berlin"
+}'
+echo
+
+# Create a new question with invalid data (added non existing field) and valid header
+curl -H "$AUTH_HEADER_ADMIN" -X POST "http://${API_HOST}:${API_PORT}/new_question" \
+-H "Content-Type: application/json" \
+-d '{
+  "question": "What is the capital of Germany?",
+  "subject": "Geography",
+  "correct": "B",
+  "use": "MCQ",
+  "responseA": "London",
+  "responseB": "Berlin",
+  "responseC": "Paris",
+  "responseX": "X"
+}'
+echo
+
+# Get questions with no auth header
+curl -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Classification&subject=Distributed%20systems&num=5"
+echo
+
+# Get questions with invalid username
+curl -H "$AUTH_HEADER_INVALID_USER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Classification&subject=Distributed%20systems&num=5"
+echo
+
+# Get questions with invalid password
+curl -H "$AUTH_HEADER_INVALID_PASS" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Classification&subject=Distributed%20systems&num=5"
+echo
+
+# Get questions with valid query
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Classification&subject=Distributed%20systems&num=5"
+echo
+
+# Get questions with same valid query again (test randomness)
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Classification&subject=Distributed%20systems&num=5"
+echo
+
+# Get questions with invalid use (Not a string)
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=3&subject=Classification&subject=Distributed%20systems&num=5"
+echo
+
+# Get questions with invalid use (Not in db)
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Test&subject=Classification&subject=Distributed%20systems&num=5"
+echo
+
+# Get questions with invalid subjects (Not a list)
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Test&num=5"
+echo
+
+# Get questions with invalid subjects (Not in db)
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Test&num=5"
+echo
+
+# Get questions with invalid number (Not an int)
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Classification&subject=Distributed%20systems&num=Test"
+echo
+
+# Get questions with invalid number of questions
+curl -H "$AUTH_HEADER" -X GET "http://${API_HOST}:${API_PORT}/get_questions?use=Validation%20test&subject=Classification&subject=Distributed%20systems&num=3"

@@ -1,0 +1,5 @@
+FROM python:3.10-alpine
+ADD authentication_test ./
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+CMD python3 authentication_test.py
